@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Upload, Download, Package, Edit, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import ProductImage from '@/components/ProductImage';
 
 export default function ProductList() {
   const [tab, setTab] = useState('products');
@@ -75,6 +76,7 @@ export default function ProductList() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>图片</TableHead>
                       <TableHead>商品名称</TableHead>
                       <TableHead>SKU编码</TableHead>
                       <TableHead>类目</TableHead>
@@ -90,6 +92,7 @@ export default function ProductList() {
                   <TableBody>
                     {filtered.map(p => (
                       <TableRow key={p.id}>
+                        <TableCell><ProductImage productId={p.id} className="w-10 h-10" iconSize="w-5 h-5" /></TableCell>
                         <TableCell className="font-medium">{p.name}</TableCell>
                         <TableCell className="text-muted-foreground font-mono text-xs">{p.skuCode}</TableCell>
                         <TableCell>{p.categoryName}</TableCell>
@@ -266,6 +269,9 @@ export default function ProductList() {
           </DialogHeader>
           {detailProduct && (
             <div className="space-y-3">
+              <div className="flex justify-center">
+                <ProductImage productId={detailProduct.id} className="w-32 h-32" iconSize="w-12 h-12" />
+              </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {[
                   ['SKU编码', detailProduct.skuCode],
