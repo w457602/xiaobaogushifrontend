@@ -16,7 +16,7 @@ export default function StoreProfile() {
   return (
     <div className="bg-muted min-h-full">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-5 pt-8 pb-10 sticky top-0 z-20">
+      <div className="bg-primary text-primary-foreground px-5 pt-8 pb-5 sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-primary-foreground/15 flex items-center justify-center">
             <User className="w-8 h-8" />
@@ -28,7 +28,7 @@ export default function StoreProfile() {
         </div>
       </div>
 
-      <div className="px-4 -mt-5 space-y-4 pb-6">
+      <div className="px-4 pt-4 space-y-4 pb-6">
         {/* Stats */}
         <Card className="border-0 shadow-sm">
           <CardContent className="p-0">
