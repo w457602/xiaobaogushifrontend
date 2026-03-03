@@ -9,20 +9,20 @@ export default function ManagerProfile() {
   const navigate = useNavigate();
 
   return (
-    <div>
-      <div className="bg-primary text-primary-foreground p-6 pb-8">
+    <div className="bg-muted min-h-full">
+      <div className="bg-background border-b border-border/50 p-5 pt-8 sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-            <User className="w-7 h-7" />
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+            <User className="w-7 h-7 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-bold">管理员</h2>
-            <p className="text-sm opacity-70">超级管理员</p>
+            <h2 className="text-lg font-bold text-foreground">管理员</h2>
+            <p className="text-sm text-muted-foreground">超级管理员</p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 -mt-3 space-y-4">
+      <div className="p-4 space-y-4">
         <Card>
           <CardContent className="p-0">
             {[

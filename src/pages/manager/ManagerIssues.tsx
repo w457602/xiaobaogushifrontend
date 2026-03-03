@@ -17,9 +17,11 @@ export default function ManagerIssues() {
   const abnormalPOs = mockPurchaseOrders.filter(po => po.status === PurchaseOrderStatus.ABNORMAL);
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-lg font-bold">异常上报</h1>
-
+    <div className="bg-muted min-h-full">
+      <div className="bg-background border-b border-border/50 px-4 pt-4 pb-3 sticky top-0 z-20">
+        <h1 className="text-lg font-bold text-foreground">异常上报</h1>
+      </div>
+      <div className="p-4 space-y-4">
       <Button className="w-full" onClick={() => setShowReport(true)}>
         <Send className="w-4 h-4 mr-2" />上报新异常
       </Button>
@@ -87,6 +89,7 @@ export default function ManagerIssues() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

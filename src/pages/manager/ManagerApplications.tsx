@@ -10,9 +10,11 @@ export default function ManagerApplications() {
   const applications = mockOrders.filter(o => o.isApplication);
 
   return (
-    <div className="p-4">
-      <h1 className="text-lg font-bold mb-4">申请订货审核</h1>
-
+    <div className="bg-muted min-h-full">
+      <div className="bg-background border-b border-border/50 px-4 pt-4 pb-3 sticky top-0 z-20">
+        <h1 className="text-lg font-bold text-foreground">申请订货审核</h1>
+      </div>
+      <div className="p-4">
       {applications.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <ClipboardCheck className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -53,6 +55,7 @@ export default function ManagerApplications() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
