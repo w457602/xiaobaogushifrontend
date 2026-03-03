@@ -124,6 +124,11 @@ function applyTheme(colors: ThemePreset['colors'], isDark: boolean) {
     root.style.setProperty('--card', `${bgHue} ${bgSat + 2}% ${Math.min(bgLight + 4, 98)}%`);
     root.style.setProperty('--popover', `${bgHue} ${bgSat + 2}% ${Math.min(bgLight + 4, 98)}%`);
     root.style.setProperty('--muted', `${bgHue} ${Math.max(bgSat - 5, 5)}% ${Math.max(bgLight - 4, 82)}%`);
+    // Foreground colors - derive from theme hue for cohesion with good contrast
+    root.style.setProperty('--foreground', `${bgHue} ${Math.min(bgSat + 10, 40)}% 12%`);
+    root.style.setProperty('--card-foreground', `${bgHue} ${Math.min(bgSat + 10, 40)}% 12%`);
+    root.style.setProperty('--popover-foreground', `${bgHue} ${Math.min(bgSat + 10, 40)}% 12%`);
+    root.style.setProperty('--muted-foreground', `${bgHue} ${Math.min(bgSat + 5, 25)}% 35%`);
     // Derive chart-1 from primary
     root.style.setProperty('--chart-1', colors.primary.replace(/\d+%$/, (m) => `${parseInt(m) + 5}%`));
   }
