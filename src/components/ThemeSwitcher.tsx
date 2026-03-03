@@ -28,11 +28,11 @@ const presets: ThemePreset[] = [
     colors: {
       primary: '220 70% 45%',
       accent: '35 95% 55%',
-      sidebarBg: '220 30% 12%',
-      sidebarFg: '220 10% 85%',
+      sidebarBg: '220 45% 18%',
+      sidebarFg: '220 15% 88%',
       background: '220 25% 92%',
     },
-    preview: { bg: '#dce1ea', sidebar: '#171d2e', accent: '#e8a317' },
+    preview: { bg: '#dce1ea', sidebar: '#1a2744', accent: '#e8a317' },
   },
   {
     id: 'teal',
@@ -40,11 +40,11 @@ const presets: ThemePreset[] = [
     colors: {
       primary: '172 66% 38%',
       accent: '24 95% 58%',
-      sidebarBg: '172 35% 10%',
-      sidebarFg: '172 10% 85%',
+      sidebarBg: '172 50% 15%',
+      sidebarFg: '172 15% 88%',
       background: '170 22% 91%',
     },
-    preview: { bg: '#d6e5e2', sidebar: '#111d1b', accent: '#f09836' },
+    preview: { bg: '#d6e5e2', sidebar: '#132e2a', accent: '#f09836' },
   },
   {
     id: 'indigo',
@@ -52,11 +52,11 @@ const presets: ThemePreset[] = [
     colors: {
       primary: '245 58% 51%',
       accent: '340 75% 55%',
-      sidebarBg: '245 30% 13%',
-      sidebarFg: '245 10% 85%',
+      sidebarBg: '255 40% 18%',
+      sidebarFg: '245 15% 88%',
       background: '245 22% 92%',
     },
-    preview: { bg: '#dddbe9', sidebar: '#19172d', accent: '#d63b6e' },
+    preview: { bg: '#dddbe9', sidebar: '#221b40', accent: '#d63b6e' },
   },
   {
     id: 'warm',
@@ -64,11 +64,11 @@ const presets: ThemePreset[] = [
     colors: {
       primary: '20 80% 48%',
       accent: '45 90% 50%',
-      sidebarBg: '20 30% 12%',
-      sidebarFg: '20 10% 85%',
+      sidebarBg: '20 45% 16%',
+      sidebarFg: '20 15% 88%',
       background: '30 28% 91%',
     },
-    preview: { bg: '#e9e2d8', sidebar: '#271c15', accent: '#d4a616' },
+    preview: { bg: '#e9e2d8', sidebar: '#3b2416', accent: '#d4a616' },
   },
   {
     id: 'slate',
@@ -76,11 +76,11 @@ const presets: ThemePreset[] = [
     colors: {
       primary: '210 15% 40%',
       accent: '200 70% 50%',
-      sidebarBg: '210 15% 10%',
-      sidebarFg: '210 10% 80%',
+      sidebarBg: '210 20% 16%',
+      sidebarFg: '210 12% 82%',
       background: '210 12% 90%',
     },
-    preview: { bg: '#d9dcdf', sidebar: '#16191c', accent: '#2692d4' },
+    preview: { bg: '#d9dcdf', sidebar: '#212830', accent: '#2692d4' },
   },
   {
     id: 'rose',
@@ -88,11 +88,11 @@ const presets: ThemePreset[] = [
     colors: {
       primary: '350 65% 48%',
       accent: '190 70% 45%',
-      sidebarBg: '350 25% 12%',
-      sidebarFg: '350 10% 85%',
+      sidebarBg: '350 35% 17%',
+      sidebarFg: '350 12% 88%',
       background: '350 18% 91%',
     },
-    preview: { bg: '#e8d9de', sidebar: '#261519', accent: '#1fa8b8' },
+    preview: { bg: '#e8d9de', sidebar: '#3a1c24', accent: '#1fa8b8' },
   },
 ];
 
