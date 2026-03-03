@@ -42,7 +42,7 @@ export default function AdminLayout() {
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
         {!collapsed && (
-          <h1 className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
+          <h1 className="text-lg font-bold text-sidebar-foreground tracking-tight">
             小堡故事订货管理系统
           </h1>
         )}
