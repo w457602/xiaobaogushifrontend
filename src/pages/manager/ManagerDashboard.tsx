@@ -12,12 +12,12 @@ export default function ManagerDashboard() {
 
   return (
     <div className="bg-muted min-h-full">
-      <div className="bg-primary text-primary-foreground p-4 pb-8">
-        <h1 className="text-lg font-bold">管理工作台</h1>
-        <p className="text-xs opacity-70">管理员 · 今日概览</p>
+      <div className="bg-background border-b border-border/50 p-4 sticky top-0 z-20">
+        <h1 className="text-lg font-bold text-foreground">管理工作台</h1>
+        <p className="text-xs text-muted-foreground">管理员 · 今日概览</p>
       </div>
 
-      <div className="p-4 -mt-4 space-y-4">
+      <div className="p-4 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: '待审核申请', value: stats.pendingApplications, icon: ClipboardCheck, color: 'text-status-pending' },

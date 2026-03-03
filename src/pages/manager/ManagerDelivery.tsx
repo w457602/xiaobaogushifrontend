@@ -14,9 +14,11 @@ export default function ManagerDelivery() {
   const activeTasks = mockFulfillmentTasks.filter(t => t.status !== FulfillmentStatus.NOT_TRANSFERRED);
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-lg font-bold">配送跟踪</h1>
-
+    <div className="bg-muted min-h-full">
+      <div className="bg-background border-b border-border/50 px-4 pt-4 pb-3 sticky top-0 z-20">
+        <h1 className="text-lg font-bold text-foreground">配送跟踪</h1>
+      </div>
+      <div className="p-4 space-y-4">
       {activeTasks.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Truck className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -76,6 +78,7 @@ export default function ManagerDelivery() {
           </Card>
         ))
       )}
+      </div>
     </div>
   );
 }
