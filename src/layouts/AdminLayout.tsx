@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/store';
 import {
   LayoutDashboard, Package, Warehouse, ShoppingCart, Truck, Users, FileText,
-  DollarSign, Bell, Settings, ChevronLeft, ChevronRight, LogOut, Menu
+  DollarSign, Bell, Settings, ChevronLeft, ChevronRight, LogOut, Menu, Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
@@ -19,6 +19,7 @@ const navItems = [
   { label: '履约配送', icon: Truck, path: '/admin/fulfillment' },
   { label: '财务中心', icon: DollarSign, path: '/admin/finance' },
   { label: '通知系统', icon: Bell, path: '/admin/notifications' },
+  { label: '小程序管理', icon: Smartphone, path: '/admin/miniprogram' },
   { label: '系统设置', icon: Settings, path: '/admin/settings' },
 ];
 
