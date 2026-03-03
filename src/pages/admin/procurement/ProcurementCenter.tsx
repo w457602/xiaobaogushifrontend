@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { mockPurchaseOrders, mockOrders } from '@/mock/data';
+import { useState, useMemo } from 'react';
+import { mockPurchaseOrders, mockOrders, mockProducts } from '@/mock/data';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FileText, Printer, Download, Send, AlertTriangle, Clock, ArrowRightLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Search, FileText, Printer, Download, Send, AlertTriangle, Clock, ArrowRightLeft, Eye, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { PurchaseOrderStatus, ProcurementAggStatus } from '@/types/enums';
+import { Order } from '@/types/models';
 
 export default function ProcurementCenter() {
   const [tab, setTab] = useState('pool');
@@ -18,10 +21,28 @@ export default function ProcurementCenter() {
   const [showReceipt, setShowReceipt] = useState<string | null>(null);
   const [showSwitch, setShowSwitch] = useState(false);
   const [receiptNo, setReceiptNo] = useState('');
+  const [showSplitDetail, setShowSplitDetail] = useState<string | null>(null);
 
   const toSplitOrders = mockOrders.filter(o => o.procurementStatus === ProcurementAggStatus.TO_SPLIT);
   const abnormalPOs = mockPurchaseOrders.filter(po => po.status === PurchaseOrderStatus.ABNORMAL);
   const detail = mockPurchaseOrders.find(po => po.id === showDetail);
+  const splitOrder = mockOrders.find(o => o.id === showSplitDetail);
+
+  // Group order items by supplier
+  const supplierGroups = useMemo(() => {
+    if (!splitOrder) return [];
+    const groups: Record<string, { supplierId: string; supplierName: string; items: typeof splitOrder.items }> = {};
+    splitOrder.items.forEach(item => {
+      const product = mockProducts.find(p => p.id === item.productId);
+      const supplierId = product?.defaultSupplierId || 'unknown';
+      const supplierName = product?.defaultSupplierName || '未知供应商';
+      if (!groups[supplierId]) {
+        groups[supplierId] = { supplierId, supplierName, items: [] };
+      }
+      groups[supplierId].items.push(item);
+    });
+    return Object.values(groups);
+  }, [splitOrder]);
 
   return (
     <div className="space-y-6">
@@ -70,7 +91,12 @@ export default function ProcurementCenter() {
                         <TableCell>¥{o.totalCostPrice.toFixed(2)}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{o.createdAt}</TableCell>
                         <TableCell>
-                          <Button size="sm" onClick={() => toast.success(`已为 ${o.orderNo} 生成采购单`)}>生成采购单</Button>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="outline" onClick={() => setShowSplitDetail(o.id)}>
+                              <Eye className="w-4 h-4 mr-1" />查看详情
+                            </Button>
+                            <Button size="sm" onClick={() => toast.success(`已为 ${o.orderNo} 生成采购单`)}>生成采购单</Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -280,6 +306,89 @@ export default function ProcurementCenter() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSwitch(false)}>取消</Button>
             <Button onClick={() => { toast.success('供应商切换申请已提交，等待审批'); setShowSwitch(false); }}>提交申请</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Split Detail Dialog - grouped by supplier */}
+      <Dialog open={!!showSplitDetail} onOpenChange={() => setShowSplitDetail(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>订单拆分详情</DialogTitle>
+            <DialogDescription>
+              {splitOrder?.orderNo} · {splitOrder?.storeName} · 按供应商分组预览
+            </DialogDescription>
+          </DialogHeader>
+          {splitOrder && (
+            <div className="space-y-4">
+              {/* Order summary */}
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div className="p-2 bg-muted rounded flex justify-between">
+                  <span className="text-muted-foreground">商品总数</span>
+                  <span className="font-medium">{splitOrder.items.reduce((s, i) => s + i.quantity, 0)} 件</span>
+                </div>
+                <div className="p-2 bg-muted rounded flex justify-between">
+                  <span className="text-muted-foreground">总成本</span>
+                  <span className="font-medium">¥{splitOrder.totalCostPrice.toFixed(2)}</span>
+                </div>
+                <div className="p-2 bg-muted rounded flex justify-between">
+                  <span className="text-muted-foreground">涉及供应商</span>
+                  <span className="font-medium">{supplierGroups.length} 家</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Supplier groups */}
+              {supplierGroups.map((group, gi) => {
+                const groupTotal = group.items.reduce((s, i) => s + i.costPrice * i.quantity, 0);
+                return (
+                  <Card key={group.supplierId} className="border-l-4 border-l-primary">
+                    <CardHeader className="pb-2 pt-3 px-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">供应商 {gi + 1}</Badge>
+                          <span className="font-semibold">{group.supplierName}</span>
+                        </div>
+                        <span className="text-sm font-medium text-primary">小计 ¥{groupTotal.toFixed(2)}</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-3">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>商品名称</TableHead>
+                            <TableHead>SKU</TableHead>
+                            <TableHead>规格</TableHead>
+                            <TableHead className="text-center">数量</TableHead>
+                            <TableHead className="text-right">单价(成本)</TableHead>
+                            <TableHead className="text-right">小计</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {group.items.map(item => (
+                            <TableRow key={item.id}>
+                              <TableCell className="font-medium">{item.productName}</TableCell>
+                              <TableCell className="text-muted-foreground font-mono text-xs">{item.skuCode}</TableCell>
+                              <TableCell className="text-sm">{item.spec}</TableCell>
+                              <TableCell className="text-center">{item.quantity} {item.unit}</TableCell>
+                              <TableCell className="text-right">¥{item.costPrice.toFixed(2)}</TableCell>
+                              <TableCell className="text-right font-medium">¥{(item.costPrice * item.quantity).toFixed(2)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSplitDetail(null)}>关闭</Button>
+            <Button onClick={() => { toast.success(`已为 ${splitOrder?.orderNo} 生成采购单`); setShowSplitDetail(null); }}>
+              确认拆分并生成采购单
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
