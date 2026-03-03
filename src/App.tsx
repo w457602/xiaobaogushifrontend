@@ -18,6 +18,7 @@ import FulfillmentCenter from "./pages/admin/fulfillment/FulfillmentCenter";
 import FinanceCenter from "./pages/admin/finance/FinanceCenter";
 import NotificationCenter from "./pages/admin/notifications/NotificationCenter";
 import SettingsCenter from "./pages/admin/settings/SettingsCenter";
+import MiniProgramCenter from "./pages/admin/miniprogram/MiniProgramCenter";
 import MobileLayout from "./layouts/MobileLayout";
 import StoreHome from "./pages/store/StoreHome";
 import StoreCategories from "./pages/store/StoreCategories";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="finance" element={<FinanceCenter />} />
             <Route path="notifications" element={<NotificationCenter />} />
             <Route path="settings" element={<SettingsCenter />} />
+            <Route path="miniprogram" element={<MiniProgramCenter />} />
           </Route>
 
           {/* Store mobile */}
