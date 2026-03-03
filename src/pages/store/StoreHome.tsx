@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Clock, Plus, Package, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import ProductImage from '@/components/ProductImage';
 
 const categories = [...new Set(mockProducts.map(p => p.categoryName))];
 
@@ -61,9 +62,7 @@ export default function StoreHome() {
           {mockProducts.slice(0, 6).map(product => (
             <Card key={product.id} className="overflow-hidden">
               <CardContent className="p-3 flex gap-3">
-                <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <Package className="w-8 h-8 text-muted-foreground/40" />
-                </div>
+                <ProductImage productId={product.id} className="w-16 h-16 shrink-0" iconSize="w-8 h-8" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{product.name}</p>
                   <p className="text-xs text-muted-foreground">{product.spec}</p>

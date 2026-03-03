@@ -5,6 +5,7 @@ import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { isOrderTime } from '@/mock/data';
 import { toast } from 'sonner';
+import ProductImage from '@/components/ProductImage';
 
 export default function StoreCart() {
   const { items, updateQty, removeItem, clearCart } = useCartStore();
@@ -37,6 +38,7 @@ export default function StoreCart() {
           {items.map(({ product, quantity }) => (
             <Card key={product.id}>
               <CardContent className="p-3 flex items-center gap-3">
+                <ProductImage productId={product.id} className="w-14 h-14 shrink-0" iconSize="w-6 h-6" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{product.name}</p>
                   <p className="text-xs text-muted-foreground">{product.spec}</p>

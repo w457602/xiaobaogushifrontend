@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Package, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import ProductImage from '@/components/ProductImage';
 
 const categories = ['全部', ...new Set(mockProducts.map(p => p.categoryName))];
 
@@ -58,9 +59,7 @@ export default function StoreCategories() {
             filtered.map(product => (
               <Card key={product.id}>
                 <CardContent className="p-2.5 flex gap-2.5">
-                  <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <Package className="w-6 h-6 text-muted-foreground/40" />
-                  </div>
+                  <ProductImage productId={product.id} className="w-14 h-14 shrink-0" iconSize="w-6 h-6" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{product.name}</p>
                     <p className="text-xs text-muted-foreground">{product.spec}</p>
