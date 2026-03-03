@@ -1,19 +1,126 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { formatDateWithDay } from '@/lib/utils';
-import { mockPaymentRecords, mockRefunds, mockRevenueData, mockProfitByProduct, mockProfitByStore } from '@/mock/data';
+import { mockPaymentRecords, mockRefunds, mockRevenueData, mockProfitByProduct, mockOrders } from '@/mock/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, CreditCard, RotateCcw, BarChart3 } from 'lucide-react';
+import { DollarSign, TrendingUp, CreditCard, RotateCcw, ChevronDown, ChevronRight, Store } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { OrderStatus } from '@/types/enums';
 
 const totalRevenue = mockPaymentRecords.filter(p => p.status === 'success').reduce((s, p) => s + p.amount, 0);
 const totalRefund = mockRefunds.reduce((s, r) => s + r.amount, 0);
 
+interface StoreProfitGroup {
+  storeName: string;
+  storeId: string;
+  orderCount: number;
+  totalSale: number;
+  totalCost: number;
+  totalLogistics: number;
+  profit: number;
+  margin: number;
+  orders: {
+    orderNo: string;
+    status: OrderStatus;
+    totalSale: number;
+    totalCost: number;
+    logistics: number;
+    profit: number;
+    createdAt: string;
+    items: { productName: string; quantity: number; unit: string; salePrice: number; costPrice: number; saleTotal: number; costTotal: number }[];
+  }[];
+}
+
+function computeStoreProfits(): StoreProfitGroup[] {
+  const validOrders = mockOrders.filter(o => o.status !== OrderStatus.CANCELLED);
+  const grouped: Record<string, StoreProfitGroup> = {};
+
+  for (const order of validOrders) {
+    if (!grouped[order.storeId]) {
+      grouped[order.storeId] = {
+        storeName: order.storeName,
+        storeId: order.storeId,
+        orderCount: 0,
+        totalSale: 0,
+        totalCost: 0,
+        totalLogistics: 0,
+        profit: 0,
+        margin: 0,
+        orders: [],
+      };
+    }
+    const g = grouped[order.storeId];
+    const logistics = order.actualLogisticsCost ?? order.estimatedLogisticsCost;
+    const profit = order.totalSalePrice - order.totalCostPrice - logistics;
+    g.orderCount++;
+    g.totalSale += order.totalSalePrice;
+    g.totalCost += order.totalCostPrice;
+    g.totalLogistics += logistics;
+    g.orders.push({
+      orderNo: order.orderNo,
+      status: order.status,
+      totalSale: order.totalSalePrice,
+      totalCost: order.totalCostPrice,
+      logistics,
+      profit,
+      createdAt: order.createdAt,
+      items: order.items.map(item => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        unit: item.unit,
+        salePrice: item.salePrice,
+        costPrice: item.costPrice,
+        saleTotal: item.salePrice * item.quantity,
+        costTotal: item.costPrice * item.quantity,
+      })),
+    });
+  }
+
+  return Object.values(grouped).map(g => {
+    g.profit = g.totalSale - g.totalCost - g.totalLogistics;
+    g.margin = g.totalSale > 0 ? (g.profit / g.totalSale) * 100 : 0;
+    return g;
+  }).sort((a, b) => b.profit - a.profit);
+}
+
+const statusLabel: Record<string, string> = {
+  [OrderStatus.PENDING]: '待处理',
+  [OrderStatus.PROCESSING]: '处理中',
+  [OrderStatus.COMPLETED]: '已完成',
+  [OrderStatus.CANCELLED]: '已取消',
+};
+
 export default function FinanceCenter() {
   const [tab, setTab] = useState('overview');
+  const [expandedStores, setExpandedStores] = useState<Set<string>>(new Set());
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+
+  const storeProfits = useMemo(computeStoreProfits, []);
+  const grandTotal = useMemo(() => ({
+    sale: storeProfits.reduce((s, g) => s + g.totalSale, 0),
+    cost: storeProfits.reduce((s, g) => s + g.totalCost, 0),
+    logistics: storeProfits.reduce((s, g) => s + g.totalLogistics, 0),
+    profit: storeProfits.reduce((s, g) => s + g.profit, 0),
+    orders: storeProfits.reduce((s, g) => s + g.orderCount, 0),
+  }), [storeProfits]);
+
+  const toggleStore = (id: string) => {
+    setExpandedStores(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleOrder = (orderNo: string) => {
+    setExpandedOrders(prev => {
+      const next = new Set(prev);
+      next.has(orderNo) ? next.delete(orderNo) : next.add(orderNo);
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -28,7 +135,7 @@ export default function FinanceCenter() {
           <TabsTrigger value="payments">收款记录</TabsTrigger>
           <TabsTrigger value="refunds">退款管理</TabsTrigger>
           <TabsTrigger value="profit-product">商品毛利</TabsTrigger>
-          <TabsTrigger value="profit-store">门店毛利</TabsTrigger>
+          <TabsTrigger value="profit-store">门店利润</TabsTrigger>
         </TabsList>
 
         {/* Overview */}
@@ -184,38 +291,102 @@ export default function FinanceCenter() {
           </Card>
         </TabsContent>
 
-        {/* Profit by store */}
-        <TabsContent value="profit-store" className="mt-4">
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>门店</TableHead>
-                    <TableHead className="text-right">订单数</TableHead>
-                    <TableHead className="text-right">营收</TableHead>
-                    <TableHead className="text-right">成本</TableHead>
-                    <TableHead className="text-right">物流</TableHead>
-                    <TableHead className="text-right">毛利</TableHead>
-                    <TableHead className="text-right">毛利率</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockProfitByStore.map(s => (
-                    <TableRow key={s.storeName}>
-                      <TableCell className="font-medium">{s.storeName}</TableCell>
-                      <TableCell className="text-right">{s.orderCount}</TableCell>
-                      <TableCell className="text-right">¥{s.revenue.toFixed(0)}</TableCell>
-                      <TableCell className="text-right text-muted-foreground">¥{s.cost.toFixed(0)}</TableCell>
-                      <TableCell className="text-right text-muted-foreground">¥{s.logistics.toFixed(0)}</TableCell>
-                      <TableCell className="text-right font-medium text-status-success">¥{s.profit.toFixed(0)}</TableCell>
-                      <TableCell className="text-right">{s.margin.toFixed(1)}%</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+        {/* Profit by store - dynamically computed */}
+        <TabsContent value="profit-store" className="mt-4 space-y-4">
+          {/* Summary cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">订单总数</p><p className="text-xl font-bold">{grandTotal.orders}</p></CardContent></Card>
+            <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">售价合计</p><p className="text-xl font-bold">¥{grandTotal.sale.toLocaleString()}</p></CardContent></Card>
+            <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">成本合计</p><p className="text-xl font-bold">¥{grandTotal.cost.toLocaleString()}</p></CardContent></Card>
+            <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">物流合计</p><p className="text-xl font-bold">¥{grandTotal.logistics.toLocaleString()}</p></CardContent></Card>
+            <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">总利润</p><p className="text-xl font-bold text-status-success">¥{grandTotal.profit.toLocaleString()}</p></CardContent></Card>
+          </div>
+
+          <p className="text-xs text-muted-foreground">毛利 = 售价合计 − 成本合计 − 物流成本（已排除已取消订单）</p>
+
+          {/* Store groups */}
+          <div className="space-y-3">
+            {storeProfits.map(group => {
+              const isOpen = expandedStores.has(group.storeId);
+              return (
+                <Card key={group.storeId}>
+                  <div
+                    className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => toggleStore(group.storeId)}
+                  >
+                    {isOpen ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
+                    <Store className="w-5 h-5 text-primary shrink-0" />
+                    <span className="font-semibold">{group.storeName}</span>
+                    <Badge variant="secondary" className="ml-1">{group.orderCount} 单</Badge>
+                    <div className="flex-1" />
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-muted-foreground hidden sm:inline">售价 ¥{group.totalSale.toLocaleString()}</span>
+                      <span className="text-muted-foreground hidden md:inline">成本 ¥{group.totalCost.toLocaleString()}</span>
+                      <span className="text-muted-foreground hidden md:inline">物流 ¥{group.totalLogistics}</span>
+                      <span className="font-bold text-status-success">利润 ¥{group.profit.toLocaleString()}</span>
+                      <span className="text-muted-foreground">{group.margin.toFixed(1)}%</span>
+                    </div>
+                  </div>
+
+                  {isOpen && (
+                    <div className="border-t">
+                      {group.orders.map(order => {
+                        const orderOpen = expandedOrders.has(order.orderNo);
+                        return (
+                          <div key={order.orderNo}>
+                            <div
+                              className="flex items-center gap-3 px-6 py-3 cursor-pointer hover:bg-muted/30 transition-colors text-sm"
+                              onClick={() => toggleOrder(order.orderNo)}
+                            >
+                              {orderOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+                              <span className="text-primary font-mono">{order.orderNo}</span>
+                              <Badge variant="secondary" className="text-xs">{statusLabel[order.status] || order.status}</Badge>
+                              <span className="text-xs text-muted-foreground hidden sm:inline">{formatDateWithDay(order.createdAt)}</span>
+                              <div className="flex-1" />
+                              <span className="text-muted-foreground">¥{order.totalSale}</span>
+                              <span className="text-muted-foreground">- ¥{order.totalCost}</span>
+                              <span className="text-muted-foreground">- ¥{order.logistics}</span>
+                              <span className="font-medium text-status-success">= ¥{order.profit}</span>
+                            </div>
+                            {orderOpen && (
+                              <div className="px-8 pb-3">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>商品</TableHead>
+                                      <TableHead className="text-right">数量</TableHead>
+                                      <TableHead className="text-right">售价</TableHead>
+                                      <TableHead className="text-right">成本</TableHead>
+                                      <TableHead className="text-right">售价小计</TableHead>
+                                      <TableHead className="text-right">成本小计</TableHead>
+                                      <TableHead className="text-right">毛利</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {order.items.map((item, i) => (
+                                      <TableRow key={i}>
+                                        <TableCell>{item.productName}</TableCell>
+                                        <TableCell className="text-right">{item.quantity}{item.unit}</TableCell>
+                                        <TableCell className="text-right">¥{item.salePrice}</TableCell>
+                                        <TableCell className="text-right text-muted-foreground">¥{item.costPrice}</TableCell>
+                                        <TableCell className="text-right">¥{item.saleTotal}</TableCell>
+                                        <TableCell className="text-right text-muted-foreground">¥{item.costTotal}</TableCell>
+                                        <TableCell className="text-right font-medium text-status-success">¥{item.saleTotal - item.costTotal}</TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
