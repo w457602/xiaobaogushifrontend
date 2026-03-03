@@ -116,6 +116,14 @@ function applyTheme(colors: ThemePreset['colors'], isDark: boolean) {
 
   if (!isDark) {
     root.style.setProperty('--background', colors.background);
+    // Derive card from background (slightly lighter)
+    const bgParts = colors.background.split(' ');
+    const bgHue = bgParts[0];
+    const bgSat = parseInt(bgParts[1]);
+    const bgLight = parseInt(bgParts[2]);
+    root.style.setProperty('--card', `${bgHue} ${bgSat + 2}% ${Math.min(bgLight + 4, 98)}%`);
+    root.style.setProperty('--popover', `${bgHue} ${bgSat + 2}% ${Math.min(bgLight + 4, 98)}%`);
+    root.style.setProperty('--muted', `${bgHue} ${Math.max(bgSat - 5, 5)}% ${Math.max(bgLight - 4, 82)}%`);
     // Derive chart-1 from primary
     root.style.setProperty('--chart-1', colors.primary.replace(/\d+%$/, (m) => `${parseInt(m) + 5}%`));
   }
