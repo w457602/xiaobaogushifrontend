@@ -226,7 +226,7 @@ export default function StoreOrderDetail() {
               folder={`receive/${order.id}`}
               photos={receivePhotos}
               onChange={setReceivePhotos}
-              maxPhotos={5}
+              maxPhotos={9}
             />
 
             <div className="flex gap-3">

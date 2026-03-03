@@ -38,17 +38,17 @@ const mockPages = [
 const mockVersions = [
   { id: 'v1', version: '1.3.0', status: 'online' as const, description: '新增申请订货功能，优化购物车体验', publishedAt: '2026-02-20 10:00:00', operator: '管理员' },
   { id: 'v2', version: '1.2.1', status: 'archived' as const, description: '修复支付回调异常问题', publishedAt: '2026-02-10 14:30:00', operator: '管理员' },
-  { id: 'v3', version: '1.2.0', status: 'archived' as const, description: '新增配送跟踪功能', publishedAt: '2026-01-15 09:00:00', operator: '管理员' },
+  { id: 'v3', version: '1.2.0', status: 'archived' as const, description: '新增订单物流信息展示功能', publishedAt: '2026-01-15 09:00:00', operator: '管理员' },
   { id: 'v4', version: '1.4.0', status: 'auditing' as const, description: '新增消息通知中心，优化下单流程', publishedAt: '', operator: '管理员' },
   { id: 'v5', version: '1.4.1', status: 'developing' as const, description: '修复已知问题，性能优化', publishedAt: '', operator: '' },
 ];
 
 const mockTemplates = [
-  { id: 'tpl1', templateId: 'tmpl_order_paid', name: '订单支付成功通知', enabled: true, keywords: ['订单编号', '支付金额', '支付时间'], scene: '用户支付成功后推送' },
-  { id: 'tpl2', templateId: 'tmpl_order_shipped', name: '订单发货通知', enabled: true, keywords: ['订单编号', '物流公司', '发货时间'], scene: '订单发货后推送' },
-  { id: 'tpl3', templateId: 'tmpl_order_received', name: '订单签收通知', enabled: true, keywords: ['订单编号', '签收时间'], scene: '门店签收后推送' },
-  { id: 'tpl4', templateId: 'tmpl_audit_result', name: '申请审核结果通知', enabled: false, keywords: ['申请编号', '审核结果', '审核时间'], scene: '申请订货审核完成后推送' },
-  { id: 'tpl5', templateId: 'tmpl_stock_alert', name: '库存预警通知', enabled: false, keywords: ['商品名称', '当前库存', '预警阈值'], scene: '库存低于阈值时推送' },
+  { id: 'tpl1', templateId: 'tmpl_order_paid_admin', name: '订单支付成功邮件', enabled: true, keywords: ['订单编号', '支付金额', '支付时间'], scene: '后台管理员收件' },
+  { id: 'tpl2', templateId: 'tmpl_order_shipped_admin', name: '订单发货信息邮件', enabled: true, keywords: ['订单编号', '发货模式', '发货时间'], scene: '后台管理员收件' },
+  { id: 'tpl3', templateId: 'tmpl_order_received_admin', name: '收货确认邮件', enabled: true, keywords: ['订单编号', '确认时间'], scene: '后台管理员收件' },
+  { id: 'tpl4', templateId: 'tmpl_audit_result_admin', name: '申请审核结果邮件', enabled: false, keywords: ['申请编号', '审核结果', '审核时间'], scene: '后台管理员收件' },
+  { id: 'tpl5', templateId: 'tmpl_stock_alert_admin', name: '库存预警邮件', enabled: false, keywords: ['商品名称', '当前库存', '预警阈值'], scene: '后台管理员收件' },
 ];
 
 const versionStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {

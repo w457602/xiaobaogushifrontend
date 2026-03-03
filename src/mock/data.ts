@@ -71,7 +71,8 @@ const createTimeline = (status: OrderStatus, isApp: boolean): OrderTimeline[] =>
     { time: '2026-02-25 09:30:00', title: isApp ? '提交申请订货' : '创建订单', description: '门店提交订单', operator: '张三' },
   ];
   if (isApp) {
-    base.push({ time: '2026-02-25 10:15:00', title: '审核通过', description: '管理员审核通过申请', operator: '管理员' });
+    base.push({ time: '2026-02-25 10:30:00', title: '支付成功', description: '申请订货已完成支付' });
+    return base;
   }
   if (status !== OrderStatus.PENDING) {
     base.push({ time: '2026-02-25 10:30:00', title: '支付成功', description: '微信支付完成' });
@@ -144,7 +145,7 @@ export const mockOrders: Order[] = [
   },
   {
     id: 'o4', orderNo: 'APP20260226001', storeId: 's3', storeName: '宿迁2号店',
-    status: OrderStatus.PENDING, paymentStatus: PaymentStatus.UNPAID,
+    status: OrderStatus.PENDING, paymentStatus: PaymentStatus.PAID,
     auditStatus: AuditStatus.PENDING,
     shippingStatus: ShippingStatus.NOT_SHIPPED, procurementStatus: ProcurementAggStatus.TO_SPLIT,
     items: [
@@ -152,12 +153,16 @@ export const mockOrders: Order[] = [
     ],
     totalSalePrice: 2980, totalCostPrice: 1500, estimatedLogisticsCost: 0,
     estimatedProfit: 1480, isApplication: true,
-    createdAt: '2026-02-26 20:30:00', timeline: createTimeline(OrderStatus.PENDING, true),
+    createdAt: '2026-02-28 10:30:00', paidAt: '2026-02-28 10:35:00',
+    timeline: [
+      { time: '2026-02-28 10:30:00', title: '提交申请订货', operator: '王五' },
+      { time: '2026-02-28 10:35:00', title: '支付成功', description: '申请订货已完成支付' },
+    ],
     remark: '急需，请优先处理',
   },
   {
     id: 'o5', orderNo: 'APP20260226002', storeId: 's2', storeName: '宿迁1号店',
-    status: OrderStatus.PENDING, paymentStatus: PaymentStatus.UNPAID,
+    status: OrderStatus.PENDING, paymentStatus: PaymentStatus.PAID,
     auditStatus: AuditStatus.APPROVED,
     shippingStatus: ShippingStatus.NOT_SHIPPED, procurementStatus: ProcurementAggStatus.TO_SPLIT,
     items: [
@@ -166,10 +171,11 @@ export const mockOrders: Order[] = [
     ],
     totalSalePrice: 2120, totalCostPrice: 1090, estimatedLogisticsCost: 0,
     estimatedProfit: 1030, isApplication: true,
-    createdAt: '2026-02-26 21:00:00',
+    createdAt: '2026-02-28 13:00:00', paidAt: '2026-02-28 13:05:00',
     timeline: [
-      { time: '2026-02-26 21:00:00', title: '提交申请订货', operator: '李四' },
-      { time: '2026-02-27 09:00:00', title: '审核通过', operator: '管理员' },
+      { time: '2026-02-28 13:00:00', title: '提交申请订货', operator: '李四' },
+      { time: '2026-02-28 13:05:00', title: '支付成功', description: '申请订货已完成支付' },
+      { time: '2026-02-28 15:00:00', title: '审核通过', operator: '管理员' },
     ],
   },
   {
@@ -317,8 +323,8 @@ export interface InventoryRecord {
 export const mockInventoryRecords: InventoryRecord[] = [
   { id: 'inv1', type: 'in', docNo: 'IN20260226001', productName: '椰浆', skuCode: 'FM-003', quantity: 30, unit: '盒', operator: '仓库李', createdAt: '2026-02-26 10:00:00', remark: '采购入库' },
   { id: 'inv2', type: 'in', docNo: 'IN20260226002', productName: '围裙', skuCode: 'ZB-001', quantity: 20, unit: '件', operator: '仓库李', createdAt: '2026-02-26 11:00:00', remark: '采购入库' },
-  { id: 'inv3', type: 'out', docNo: 'OUT20260228001', productName: '椰浆', skuCode: 'FM-003', quantity: 10, unit: '盒', operator: '仓库李', relatedOrderNo: 'ORD20260224001', createdAt: '2026-02-28 14:00:00', remark: '订单出库' },
-  { id: 'inv4', type: 'out', docNo: 'OUT20260228002', productName: '围裙', skuCode: 'ZB-001', quantity: 5, unit: '件', operator: '仓库李', relatedOrderNo: 'ORD20260224001', createdAt: '2026-02-28 14:30:00', remark: '订单出库' },
+  { id: 'inv3', type: 'out', docNo: 'LK20260228001', productName: '椰浆', skuCode: 'FM-003', quantity: 10, unit: '盒', operator: '系统', relatedOrderNo: 'ORD20260224001', createdAt: '2026-02-28 14:00:00', remark: '订单锁定库存' },
+  { id: 'inv4', type: 'out', docNo: 'LK20260228002', productName: '围裙', skuCode: 'ZB-001', quantity: 5, unit: '件', operator: '系统', relatedOrderNo: 'ORD20260224001', createdAt: '2026-02-28 14:30:00', remark: '订单锁定库存' },
   { id: 'inv5', type: 'in', docNo: 'IN20260227001', productName: '封口机', skuCode: 'MC-001', quantity: 5, unit: '台', operator: '仓库李', createdAt: '2026-02-27 09:00:00', remark: '采购入库' },
   { id: 'inv6', type: 'in', docNo: 'IN20260227002', productName: '白砂糖', skuCode: 'FM-002', quantity: 50, unit: '袋', operator: '仓库张', createdAt: '2026-02-27 10:00:00', remark: '采购入库' },
 ];
@@ -361,16 +367,16 @@ export interface NotificationTemplate {
   id: string;
   name: string;
   type: 'order' | 'procurement' | 'system';
-  channel: 'wechat' | 'sms' | 'email';
+  channel: 'email';
   content: string;
   enabled: boolean;
 }
 
 export const mockNotificationTemplates: NotificationTemplate[] = [
-  { id: 'nt1', name: '订单创建通知', type: 'order', channel: 'wechat', content: '您的订单 {orderNo} 已创建，请及时支付。', enabled: true },
-  { id: 'nt2', name: '支付成功通知', type: 'order', channel: 'wechat', content: '订单 {orderNo} 支付成功，金额 ¥{amount}。', enabled: true },
-  { id: 'nt3', name: '发货通知', type: 'order', channel: 'wechat', content: '您的订单 {orderNo} 已发货，请注意查收。', enabled: true },
-  { id: 'nt4', name: '采购异常通知', type: 'procurement', channel: 'sms', content: '采购单 {poNo} 出现异常：{reason}，请及时处理。', enabled: true },
+  { id: 'nt1', name: '订单创建通知', type: 'order', channel: 'email', content: '订单 {orderNo} 已创建，待支付。', enabled: true },
+  { id: 'nt2', name: '支付成功通知', type: 'order', channel: 'email', content: '订单 {orderNo} 支付成功，金额 ¥{amount}。', enabled: true },
+  { id: 'nt3', name: '订单发货信息录入通知', type: 'order', channel: 'email', content: '订单 {orderNo} 已录入发货信息，请关注后续收货确认。', enabled: true },
+  { id: 'nt4', name: '采购异常通知', type: 'procurement', channel: 'email', content: '采购单 {poNo} 出现异常：{reason}，请及时处理。', enabled: true },
   { id: 'nt5', name: '库存预警通知', type: 'system', channel: 'email', content: '商品 {productName} 库存低于安全线，当前库存 {stock}。', enabled: false },
 ];
 
@@ -378,18 +384,18 @@ export interface NotificationLog {
   id: string;
   templateName: string;
   target: string;
-  channel: 'wechat' | 'sms' | 'email';
+  channel: 'email';
   status: 'sent' | 'failed';
   content: string;
   sentAt: string;
 }
 
 export const mockNotificationLogs: NotificationLog[] = [
-  { id: 'nl1', templateName: '订单创建通知', target: '宿迁总店-张三', channel: 'wechat', status: 'sent', content: '您的订单 ORD20260225001 已创建，请及时支付。', sentAt: '2026-02-25 09:30:05' },
-  { id: 'nl2', templateName: '支付成功通知', target: '宿迁1号店-李四', channel: 'wechat', status: 'sent', content: '订单 ORD20260225002 支付成功，金额 ¥762.00。', sentAt: '2026-02-25 10:30:10' },
-  { id: 'nl3', templateName: '采购异常通知', target: '管理员', channel: 'sms', status: 'sent', content: '采购单 PO20260225003 出现异常：供应商库存不足。', sentAt: '2026-02-26 09:01:00' },
-  { id: 'nl4', templateName: '发货通知', target: '宿迁总店-张三', channel: 'wechat', status: 'sent', content: '您的订单 ORD20260224001 已发货，请注意查收。', sentAt: '2026-02-28 16:00:05' },
-  { id: 'nl5', templateName: '库存预警通知', target: '管理员', channel: 'email', status: 'failed', content: '商品 果糖机 库存低于安全线，当前库存 10。', sentAt: '2026-02-28 08:00:00' },
+  { id: 'nl1', templateName: '订单创建通知', target: 'ops@xiaobao.com', channel: 'email', status: 'sent', content: '订单 ORD20260225001 已创建，待支付。', sentAt: '2026-02-25 09:30:05' },
+  { id: 'nl2', templateName: '支付成功通知', target: 'finance@xiaobao.com', channel: 'email', status: 'sent', content: '订单 ORD20260225002 支付成功，金额 ¥762.00。', sentAt: '2026-02-25 10:30:10' },
+  { id: 'nl3', templateName: '采购异常通知', target: 'supply@xiaobao.com', channel: 'email', status: 'sent', content: '采购单 PO20260225003 出现异常：供应商库存不足。', sentAt: '2026-02-26 09:01:00' },
+  { id: 'nl4', templateName: '订单发货信息录入通知', target: 'ops@xiaobao.com', channel: 'email', status: 'sent', content: '订单 ORD20260224001 已录入发货信息。', sentAt: '2026-02-28 16:00:05' },
+  { id: 'nl5', templateName: '库存预警通知', target: 'ops@xiaobao.com', channel: 'email', status: 'failed', content: '商品 果糖机 库存低于安全线，当前库存 10。', sentAt: '2026-02-28 08:00:00' },
 ];
 
 // ============ System Users & Roles ============
@@ -420,7 +426,7 @@ export interface SystemRole {
 
 export const mockSystemRoles: SystemRole[] = [
   { id: 'r1', name: '超级管理员', description: '拥有所有权限', permissions: ['all'], userCount: 1 },
-  { id: 'r2', name: '仓库管理员', description: '库存管理、出入库操作', permissions: ['inventory'], userCount: 1 },
+  { id: 'r2', name: '仓库管理员', description: '库存管理、入库与锁库台账维护', permissions: ['inventory'], userCount: 1 },
   { id: 'r3', name: '财务专员', description: '财务报表、收款对账、退款管理', permissions: ['finance'], userCount: 1 },
   { id: 'r4', name: '采购专员', description: '采购单管理、供应商管理', permissions: ['procurement', 'supplier'], userCount: 1 },
 ];
@@ -449,7 +455,7 @@ export const mockDashboardStats: DashboardStats = {
   todayOrders: 12,
   todayRevenue: 3580.50,
   pendingOrders: 3,
-  pendingApplications: 2,
+  pendingApplications: 1,
   procurementAbnormal: 1,
   lowStockItems: 4,
 };
@@ -485,15 +491,26 @@ export const mockProfitByStore = [
 ];
 
 // ============ Helpers ============
+export type OrderWindowMode = 'order' | 'application' | 'closed';
+
+export function getOrderWindowMode(date = new Date()): OrderWindowMode {
+  const day = date.getDay();
+  if (day >= 1 && day <= 5) return 'order';
+  if (day === 6) return 'application';
+  return 'closed';
+}
+
 export function isOrderTime(): boolean {
-  const now = new Date();
-  const day = now.getDay();
-  return day >= 1 && day <= 5;
+  return getOrderWindowMode() === 'order';
 }
 
 export function getOrderTimeHint(): string {
-  if (isOrderTime()) {
+  const mode = getOrderWindowMode();
+  if (mode === 'order') {
     return '当前为下单时段（周一至周五），可正常下单';
   }
-  return '当前为非下单时段，仅可提交申请订货。正式下单时间：周一至周五 00:00-23:59，周六统一发货';
+  if (mode === 'application') {
+    return '当前为周六申请订货时段：可提交申请订货并支付，后台将人工审核。';
+  }
+  return '当前为周日暂停下单。正式下单时间：周一至周五 00:00-23:59；申请订货时间：周六。';
 }

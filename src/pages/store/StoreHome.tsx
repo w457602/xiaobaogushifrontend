@@ -1,4 +1,4 @@
-import { mockProducts, getOrderTimeHint, isOrderTime } from '@/mock/data';
+import { mockProducts, getOrderTimeHint } from '@/mock/data';
 import { useCartStore } from '@/lib/store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

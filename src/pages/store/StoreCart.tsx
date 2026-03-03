@@ -3,16 +3,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { isOrderTime } from '@/mock/data';
+import { getOrderWindowMode } from '@/mock/data';
 import { toast } from 'sonner';
 import ProductImage from '@/components/ProductImage';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function StoreCart() {
-  const { items, updateQty, removeItem, clearCart } = useCartStore();
+  const { items, updateQty, clearCart } = useCartStore();
   const navigate = useNavigate();
   const total = items.reduce((sum, i) => sum + i.product.salePrice * i.quantity, 0);
-  const canOrder = isOrderTime();
+  const orderWindowMode = getOrderWindowMode();
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   if (items.length === 0) {
@@ -97,21 +97,25 @@ export default function StoreCart() {
           <p className="text-[11px] text-muted-foreground">合计</p>
           <p className="text-xl font-bold text-primary">¥{total.toFixed(2)}</p>
         </div>
-        {canOrder ? (
+        {orderWindowMode === 'order' ? (
           <Button className="px-8 rounded-xl h-11 text-base font-semibold shadow-sm" onClick={() => {
-            toast.success('模拟微信支付成功');
+            toast.success('模拟微信支付成功，订单已创建');
             clearCart();
             navigate('/store/orders');
           }}>
             去结算
           </Button>
-        ) : (
+        ) : orderWindowMode === 'application' ? (
           <Button className="px-8 rounded-xl h-11 text-base font-semibold" variant="secondary" onClick={() => {
-            toast.success('申请订货已提交，等待审核');
+            toast.success('申请订货已支付，等待后台审核');
             clearCart();
             navigate('/store/orders');
           }}>
-            申请订货
+            申请订货并支付
+          </Button>
+        ) : (
+          <Button className="px-8 rounded-xl h-11 text-base font-semibold" variant="outline" disabled>
+            周日暂停下单
           </Button>
         )}
       </div>

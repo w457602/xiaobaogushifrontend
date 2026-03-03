@@ -117,9 +117,10 @@ export default function SettingsCenter() {
             <CardHeader><CardTitle className="text-base">订单参数</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {[
-                { label: '下单时间', value: '周一至周五 00:00-23:59', desc: '仅在此时段可正式下单' },
-                { label: '统一发货日', value: '周六', desc: '节假日顺延至下一个工作日' },
-                { label: '安全库存阈值', value: '80', desc: '低于此数量触发库存预警' },
+                { label: '下单时间', value: '周一至周五 00:00-23:59', desc: '固定规则，不可修改', locked: true },
+                { label: '申请订货时间', value: '周六', desc: '固定规则：先支付后审核', locked: true },
+                { label: '统一发货日', value: '周六（节假日顺延）', desc: '固定规则，不可修改', locked: true },
+                { label: '安全库存阈值', value: '80', desc: '低于此数量触发库存预警', locked: false },
               ].map(c => (
                 <div key={c.label} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
@@ -128,7 +129,11 @@ export default function SettingsCenter() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{c.value}</span>
-                    <Button variant="ghost" size="sm">修改</Button>
+                    {c.locked ? (
+                      <Badge variant="outline">固定</Badge>
+                    ) : (
+                      <Button variant="ghost" size="sm">修改</Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -138,9 +143,9 @@ export default function SettingsCenter() {
             <CardHeader><CardTitle className="text-base">系统开关</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {[
-                { label: '申请订货功能', desc: '非下单时段允许提交申请订货', on: true },
+                { label: '申请订货功能', desc: '周六允许提交申请订货（先支付后审核）', on: true },
                 { label: '库存预警通知', desc: '库存低于安全线时自动通知', on: true },
-                { label: '采购异常通知', desc: '采购异常时短信通知管理员', on: true },
+                { label: '采购异常通知', desc: '采购异常时邮件通知后台管理员', on: true },
               ].map(s => (
                 <div key={s.label} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>

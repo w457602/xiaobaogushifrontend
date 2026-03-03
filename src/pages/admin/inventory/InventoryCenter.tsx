@@ -26,14 +26,14 @@ export default function InventoryCenter() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">库存中心</h1>
-        <p className="text-muted-foreground">库存总览、出入库管理、盘点调整</p>
+        <p className="text-muted-foreground">库存总览、入库与锁库记录、盘点调整</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="overview">库存总览</TabsTrigger>
           <TabsTrigger value="in">入库记录</TabsTrigger>
-          <TabsTrigger value="out">出库记录</TabsTrigger>
+          <TabsTrigger value="out">锁库记录</TabsTrigger>
           <TabsTrigger value="warning">
             库存预警
             {lowStockProducts.length > 0 && (
@@ -130,17 +130,17 @@ export default function InventoryCenter() {
           </Card>
         </TabsContent>
 
-        {/* Out records */}
+        {/* Lock records */}
         <TabsContent value="out" className="mt-4">
           <Card>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>出库单号</TableHead>
+                    <TableHead>锁库记录号</TableHead>
                     <TableHead>商品</TableHead>
                     <TableHead>SKU</TableHead>
-                    <TableHead className="text-right">数量</TableHead>
+                    <TableHead className="text-right">锁定数量</TableHead>
                     <TableHead>关联订单</TableHead>
                     <TableHead>操作人</TableHead>
                     <TableHead>时间</TableHead>
@@ -152,7 +152,7 @@ export default function InventoryCenter() {
                       <TableCell className="font-medium font-mono text-xs">{r.docNo}</TableCell>
                       <TableCell>{r.productName}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{r.skuCode}</TableCell>
-                      <TableCell className="text-right text-status-error font-medium">-{r.quantity}{r.unit}</TableCell>
+                      <TableCell className="text-right text-status-error font-medium">{r.quantity}{r.unit}</TableCell>
                       <TableCell className="text-primary text-sm">{r.relatedOrderNo}</TableCell>
                       <TableCell>{r.operator}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{formatDateWithDay(r.createdAt)}</TableCell>

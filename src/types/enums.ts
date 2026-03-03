@@ -1,53 +1,54 @@
 // 订单主状态
 export enum OrderStatus {
-  PENDING = 'order_pending',
-  PROCESSING = 'order_processing',
-  COMPLETED = 'order_completed',
-  CANCELLED = 'order_cancelled',
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
 }
 
 // 支付状态
 export enum PaymentStatus {
-  UNPAID = 'pay_unpaid',
-  PAYING = 'pay_paying',
-  PAID = 'pay_paid',
+  UNPAID = 'unpaid',
+  PAYING = 'paying',
+  PAID = 'paid',
   FAILED = 'pay_failed',
-  REFUNDING = 'pay_refunding',
-  REFUNDED = 'pay_refunded',
+  REFUNDING = 'refunding',
+  REFUNDED = 'refunded',
 }
 
 // 审核状态
 export enum AuditStatus {
-  PENDING = 'audit_pending',
-  APPROVED = 'audit_approved',
-  REJECTED = 'audit_rejected',
+  PENDING = 'review_pending',
+  APPROVED = 'review_final_passed',
+  REJECTED = 'review_rejected',
 }
 
 // 发货状态（供应商发货 → 用户收货）
 export enum ShippingStatus {
-  NOT_SHIPPED = 'ship_not_shipped',
-  SHIPPED = 'ship_shipped',
-  RECEIVED = 'ship_received',
+  NOT_SHIPPED = 'not_shipped',
+  SHIPPED = 'shipped',
+  RECEIVED = 'received',
+  RECEIPT_EXCEPTION = 'receipt_exception',
 }
 
 // 采购聚合状态
 export enum ProcurementAggStatus {
-  TO_SPLIT = 'proc_to_split',
-  PROCURING = 'proc_procuring',
-  READY = 'proc_ready',
-  ABNORMAL = 'proc_abnormal',
-  CLOSED = 'proc_closed',
+  TO_SPLIT = 'pending_split',
+  PROCURING = 'in_procurement',
+  READY = 'ready_ship_info',
+  ABNORMAL = 'procurement_exception',
+  CLOSED = 'closed',
 }
 
 // 采购单状态
 export enum PurchaseOrderStatus {
-  CREATED = 'po_created',
-  EXPORTED = 'po_exported',
-  PRINTED = 'po_printed',
-  SENT = 'po_sent',
-  RECEIPTED = 'po_receipted',
-  ABNORMAL = 'po_abnormal',
-  CANCELLED = 'po_cancelled',
+  CREATED = 'created',
+  EXPORTED = 'exported',
+  PRINTED = 'printed',
+  SENT = 'sent',
+  RECEIPTED = 'receipt_confirmed',
+  ABNORMAL = 'procurement_exception',
+  CANCELLED = 'cancelled',
 }
 
 // 状态标签配置
@@ -68,9 +69,10 @@ export const STATUS_CONFIG: Record<string, { label: string; color: 'pending' | '
   [ShippingStatus.NOT_SHIPPED]: { label: '待发货', color: 'pending' },
   [ShippingStatus.SHIPPED]: { label: '已发货', color: 'processing' },
   [ShippingStatus.RECEIVED]: { label: '已收货', color: 'success' },
+  [ShippingStatus.RECEIPT_EXCEPTION]: { label: '收货异常', color: 'error' },
   [ProcurementAggStatus.TO_SPLIT]: { label: '待拆分', color: 'pending' },
   [ProcurementAggStatus.PROCURING]: { label: '采购中', color: 'processing' },
-  [ProcurementAggStatus.READY]: { label: '可出库', color: 'success' },
+  [ProcurementAggStatus.READY]: { label: '待录物流', color: 'processing' },
   [ProcurementAggStatus.ABNORMAL]: { label: '采购异常', color: 'error' },
   [ProcurementAggStatus.CLOSED]: { label: '已关闭', color: 'cancelled' },
   [PurchaseOrderStatus.CREATED]: { label: '已创建', color: 'processing' },

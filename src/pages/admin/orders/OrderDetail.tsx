@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { OrderStatus, PaymentStatus, ShippingStatus } from '@/types/enums';
+import { AuditStatus, OrderStatus, PaymentStatus, ProcurementAggStatus, ShippingStatus } from '@/types/enums';
 import { PhotoUpload } from '@/components/PhotoUpload';
 
 export default function OrderDetail() {
@@ -26,6 +26,7 @@ export default function OrderDetail() {
   const [driverPhone, setDriverPhone] = useState('');
   const [itemTrackings, setItemTrackings] = useState<Record<string, string>>({});
   const [shippingPhotos, setShippingPhotos] = useState<string[]>([]);
+  const [shippingMode, setShippingMode] = useState<'by_item_tracking' | 'driver_direct'>('by_item_tracking');
 
   if (!order) {
     return (
@@ -37,14 +38,38 @@ export default function OrderDetail() {
     );
   }
 
+  const reviewStatus = order.auditStatus ?? (
+    order.isApplication
+      ? AuditStatus.PENDING
+      : (order.paymentStatus === PaymentStatus.PAID ? AuditStatus.APPROVED : AuditStatus.PENDING)
+  );
+  const reviewPassed = reviewStatus === AuditStatus.APPROVED;
+  const canInputShipping =
+    order.paymentStatus === PaymentStatus.PAID &&
+    reviewPassed &&
+    order.procurementStatus === ProcurementAggStatus.READY &&
+    order.shippingStatus === ShippingStatus.NOT_SHIPPED;
+
   const handleShippingSubmit = () => {
-    const trackings = Object.entries(itemTrackings).filter(([, v]) => v.trim());
-    if (!driverName.trim() && trackings.length === 0) {
-      toast.error('请至少填写司机信息或物流单号');
-      return;
+    if (shippingMode === 'driver_direct') {
+      if (!driverName.trim() || !driverPhone.trim()) {
+        toast.error('司机直送模式下，司机姓名和电话必填');
+        return;
+      }
+      if (shippingPhotos.length < 1) {
+        toast.error('司机直送模式下，至少上传1张发货图片');
+        return;
+      }
+    } else {
+      const unfilled = order.items.filter(item => !(itemTrackings[item.id] || '').trim());
+      if (unfilled.length > 0) {
+        toast.error('按明细运单模式下，请为每个商品填写物流单号');
+        return;
+      }
     }
     toast.success('发货信息已保存');
     setShowShipping(false);
+    setShippingMode('by_item_tracking');
     setDriverName('');
     setDriverPhone('');
     setItemTrackings({});
@@ -69,10 +94,10 @@ export default function OrderDetail() {
           <p className="text-sm text-muted-foreground">{order.storeName} · {formatDateWithDay(order.createdAt)}</p>
         </div>
         <div className="flex gap-2">
-          {order.status === OrderStatus.PENDING && order.paymentStatus === PaymentStatus.PAID && (
+          {order.status === OrderStatus.PENDING && order.paymentStatus === PaymentStatus.PAID && reviewPassed && (
             <Button onClick={() => setShowLogistics(true)}>录入物流成本</Button>
           )}
-          {order.paymentStatus === PaymentStatus.PAID && order.shippingStatus === ShippingStatus.NOT_SHIPPED && (
+          {canInputShipping && (
             <Button onClick={() => setShowShipping(true)}>
               <Truck className="w-4 h-4 mr-1" />录入发货信息
             </Button>
@@ -88,14 +113,12 @@ export default function OrderDetail() {
             <StatusBadge status={order.paymentStatus} />
           </CardContent>
         </Card>
-        {order.auditStatus && (
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-1">审核状态</p>
-              <StatusBadge status={order.auditStatus} />
-            </CardContent>
-          </Card>
-        )}
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground mb-1">审核状态</p>
+            <StatusBadge status={reviewStatus} />
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground mb-1">发货状态</p>
@@ -310,24 +333,44 @@ export default function OrderDetail() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>录入发货信息</DialogTitle>
-            <DialogDescription>填写送货司机信息和/或按商品填写物流单号</DialogDescription>
+            <DialogDescription>选择录入模式：按商品运单号，或司机直送（司机信息+发货图片）</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2 p-3 rounded-lg border">
+              <p className="text-sm font-semibold">录入模式</p>
+              <div className="flex gap-2">
+                <Button
+                  variant={shippingMode === 'by_item_tracking' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setShippingMode('by_item_tracking')}
+                >
+                  按明细运单
+                </Button>
+                <Button
+                  variant={shippingMode === 'driver_direct' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setShippingMode('driver_direct')}
+                >
+                  司机直送
+                </Button>
+              </div>
+            </div>
+
             {/* Driver info */}
             <div className="space-y-3 p-3 rounded-lg border">
               <p className="text-sm font-semibold flex items-center gap-2"><User className="w-4 h-4" /> 司机信息</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">司机姓名</label>
-                  <Input value={driverName} onChange={e => setDriverName(e.target.value)} placeholder="请输入" />
+                  <Input value={driverName} onChange={e => setDriverName(e.target.value)} placeholder={shippingMode === 'driver_direct' ? '必填' : '选填'} />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">联系电话</label>
-                  <Input value={driverPhone} onChange={e => setDriverPhone(e.target.value)} placeholder="请输入" />
+                  <Input value={driverPhone} onChange={e => setDriverPhone(e.target.value)} placeholder={shippingMode === 'driver_direct' ? '必填' : '选填'} />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">发货照片</label>
+                <label className="text-xs text-muted-foreground">发货照片（司机直送模式至少1张）</label>
                 <PhotoUpload
                   folder={`shipping/${order.id}`}
                   photos={shippingPhotos}
@@ -340,7 +383,7 @@ export default function OrderDetail() {
 
             {/* Per-item tracking */}
             <div className="space-y-3 p-3 rounded-lg border">
-              <p className="text-sm font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> 商品物流单号</p>
+              <p className="text-sm font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> 商品物流单号（按明细运单模式必填）</p>
               {order.items.map(item => (
                 <div key={item.id} className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">

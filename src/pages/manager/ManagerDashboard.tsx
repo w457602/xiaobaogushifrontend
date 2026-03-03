@@ -3,12 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Link } from 'react-router-dom';
 import { ClipboardCheck, AlertTriangle, ShoppingCart, Truck } from 'lucide-react';
-import { AuditStatus } from '@/types/enums';
+import { AuditStatus, ProcurementAggStatus, ShippingStatus } from '@/types/enums';
 
 const stats = mockDashboardStats;
 
 export default function ManagerDashboard() {
   const pendingApps = mockOrders.filter(o => o.isApplication && o.auditStatus === AuditStatus.PENDING);
+  const pendingShippingInfo = mockOrders.filter(
+    o => o.procurementStatus === ProcurementAggStatus.READY && o.shippingStatus === ShippingStatus.NOT_SHIPPED,
+  ).length;
 
   return (
     <div className="bg-muted min-h-full">
@@ -23,7 +26,7 @@ export default function ManagerDashboard() {
             { label: '待审核申请', value: stats.pendingApplications, icon: ClipboardCheck, color: 'text-status-pending' },
             { label: '待处理订单', value: stats.pendingOrders, icon: ShoppingCart, color: 'text-status-processing' },
             { label: '采购异常', value: stats.procurementAbnormal, icon: AlertTriangle, color: 'text-status-error' },
-            { label: '配送中', value: 2, icon: Truck, color: 'text-primary' },
+            { label: '待录物流', value: pendingShippingInfo, icon: Truck, color: 'text-primary' },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-3 flex items-center gap-3">
